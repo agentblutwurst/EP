@@ -13,21 +13,50 @@ class CInquiry(object):
         for addr, name in nearby_devices:
             print("  {} - {}".format(addr, name))
 
-    def StartBluetoothService():
+    def EnableBluetoothService():
         try:
             subprocess.run(["sudo","systemctl","enable","bluetooth"], check = True)
             print("Blootooth aktiviert")
 
         except subprocess.CalledProcessError as e:
-            print(f"fehler: {e}")
+            print(f"Fehler: {e}")
+
+    def StartBluetoothService():
+        try:
+            subprocess.run(["sudo","systemctl","start","bluetooth"], check = True)
+            print("Blootooth gestartet")
+
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler: {e}")
+
+    def StopBluetoothService():
+        try:
+            subprocess.run(["sudo","systemctl","stop","bluetooth"], check = True)
+            print("Blootooth gestopt")
+
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler: {e}")
 
     def MakeDiscoverable():
-        input_data =  "power on\nagent on\ndiscoverable on"
         try:
             subprocess.run(["bluetoothctl"], input="power on\nagent on\ndiscoverable on".encode(), text=False)
 
         except subprocess.CalledProcessError as e:
-            print(f"fehler: {e}")
+            print(f"Fehler: {e}")
+
+    def MakeUndiscoverable():
+        try:
+            subprocess.run(["bluetoothctl"], input="power on\nagent on\ndiscoverable off".encode(), text=False)
+
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler: {e}")
+
+    def UnblockWirelessConnections():
+        try:
+            subprocess.run(["sudo","rfkill","unblock","all"])
+
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler: {e}")
             
 
 if __name__ == '__main__':
