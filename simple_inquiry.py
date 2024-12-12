@@ -7,14 +7,7 @@ class CInquiry(object):
     def __init__(self):
         pass
 
-    """def SearchDevices():
-        nearby_devices = bluetooth.discover_devices(lookup_names=True)
-        print("Found {} devices.".format(len(nearby_devices)))
-
-        for addr, name in nearby_devices:
-            print("  {} - {}".format(addr, name))"""
-
-    def EnableBluetoothService():
+    def EnableBluetoothService(self):
         try:
             subprocess.run(["sudo","systemctl","enable","bluetooth"], check = True)
             print("Blootooth aktiviert")
@@ -22,7 +15,7 @@ class CInquiry(object):
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    def StartBluetoothService():
+    def StartBluetoothService(self):
         try:
             subprocess.run(["sudo","systemctl","start","bluetooth"], check = True)
             print("Blootooth gestartet")
@@ -30,7 +23,7 @@ class CInquiry(object):
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    def StopBluetoothService():
+    def StopBluetoothService(self):
         try:
             subprocess.run(["sudo","systemctl","stop","bluetooth"], check = True)
             print("Blootooth gestopt")
@@ -38,62 +31,49 @@ class CInquiry(object):
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    def MakeDiscoverable():
+    def MakeDiscoverable(self):
         try:
             subprocess.run(["bluetoothctl"], input="power on\nagent on\ndiscoverable on".encode(), text=False)
 
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    def MakeUndiscoverable():
+    def MakeUndiscoverable(self):
         try:
             subprocess.run(["bluetoothctl"], input="power on\nagent on\ndiscoverable off".encode(), text=False)
 
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    def UnblockWirelessConnections():
+    def UnblockWirelessConnections(self):
         try:
             subprocess.run(["sudo","rfkill","unblock","all"])
 
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    """def CheckBluetoothConnection():
+    def CheckIfBluetooth(self):
         try:
-            result = subprocess.run(["hciconfig"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-            if "UP RUNNING\n" in result.stdout:
-                print(result.stdout, " , passt")
-
-            else:
-                print(result.stdout, " , funzt net")
-
-        except subprocess.CalledProcessError as e:
-            print(f"Fehler: {e}")"""
-
-    def CheckIfBluetooth():
-        try:
-            subprocess.run(["bluetoothctl"], input="show".encode(), text=False)
-
-            print(" , passt")
-
-        except subprocess.CalledProcessError as e:
-            print(f"Fehler: {e}")
-
-    def CheckIfBluetooth0():
-        try:
-            result = subprocess.run(["bluetoothctl"], input="power on\nagent on".encode(), text=False, stdout=subprocess.PIPE)
-            word_to_count = "[bluetooth]"
-            word_count = str(result.stdout).count(word_to_count)
-
-            print(result.stdout)
-            print(word_count)
-
-        except subprocess.CalledProcessError as e:
-            print(f"Fehler: {e}")
-
+            OutputString = subprocess.run(["hcitool","con"], stdout = subprocess.PIPE)
             
+            if len(OutputString.stdout) > 13:  #Die 13 steht für die Länge des Strings "Connections:\n"
+                return True
+            else:
+                return False
+
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler: {e}")
+
+    def InitializeBluetoothConnection(self):
+        if self.CheckIfBluetooth() == False:
+            self.UnblockWirelessConnections()
+            self.MakeDiscoverable()
+
+        while(True):
+            if self.CheckIfBluetooth():
+                self.MakeUndiscoverable()
+                break
+
 
 if __name__ == '__main__':
     st = time.time()
@@ -104,8 +84,9 @@ if __name__ == '__main__':
     #CInquiry.StartBluetoothService()
     #CInquiry.MakeDiscoverable()
     #CInquiry.CheckIfBluetooth()
-    CInquiry.CheckIfBluetooth0()
-    
+    #CInquiry.CheckIfBluetooth()
+    CInquiry().InitializeBluetoothConnection()
+
 
     et = time.time()
 
