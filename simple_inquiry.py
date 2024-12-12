@@ -1,17 +1,18 @@
 import bluetooth
 import subprocess
+import time
 
 class CInquiry(object):
 
     def __init__(self):
         pass
 
-    def SearchDevices():
+    """def SearchDevices():
         nearby_devices = bluetooth.discover_devices(lookup_names=True)
         print("Found {} devices.".format(len(nearby_devices)))
 
         for addr, name in nearby_devices:
-            print("  {} - {}".format(addr, name))
+            print("  {} - {}".format(addr, name))"""
 
     def EnableBluetoothService():
         try:
@@ -60,5 +61,17 @@ class CInquiry(object):
             
 
 if __name__ == '__main__':
+    st = time.time()
+
     #CInquiry.StartBluetoothService()
+    CInquiry.UnblockWirelessConnections()
+    CInquiry.EnableBluetoothService()
+    CInquiry.StartBluetoothService()
     CInquiry.MakeDiscoverable()
+    
+
+    et = time.time()
+
+    print(et-st)
+    #if :
+        #CInquiry.MakeUndiscoverable()
