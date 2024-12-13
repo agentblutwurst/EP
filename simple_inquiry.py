@@ -1,4 +1,3 @@
-import bluetooth
 import subprocess
 import time
 
