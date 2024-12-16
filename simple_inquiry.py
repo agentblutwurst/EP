@@ -69,6 +69,7 @@ class CInquiry(object):
             self.MakeDiscoverable()
 
         while(True):
+        # weitere Abbruchbedingung hinzufügen wegen unendlicher Schleife
             if self.CheckIfBluetooth():
                 self.MakeUndiscoverable()
                 break
@@ -83,12 +84,8 @@ if __name__ == '__main__':
     #CInquiry.StartBluetoothService()
     #CInquiry.MakeDiscoverable()
     #CInquiry.CheckIfBluetooth()
-    #CInquiry.CheckIfBluetooth()
     CInquiry().InitializeBluetoothConnection()
-
 
     et = time.time()
 
     print(et-st)
-    #if :
-        #CInquiry.MakeUndiscoverable()
