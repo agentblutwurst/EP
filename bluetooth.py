@@ -1,7 +1,8 @@
 import subprocess
 import time
+import general.py
 
-class CInquiry(object):
+class CBluetoothFuctions(object):
 
     def __init__(self):
         pass
@@ -63,28 +64,28 @@ class CInquiry(object):
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    def InitializeBluetoothConnection(self):
-        if self.CheckIfBluetooth() == False:
-            self.UnblockWirelessConnections()
-            self.MakeDiscoverable()
+class CBluetoothModules(object):
+    def InitializeBluetoothConnection():
+        if not CBluetoothFuctions.CheckIfBluetooth():
+            CBluetoothFuctions.UnblockWirelessConnections()
+            CBluetoothFuctions.MakeDiscoverable()
 
-        while(True):
+        for i in 100:
         # weitere Abbruchbedingung hinzufügen wegen unendlicher Schleife
-            if self.CheckIfBluetooth():
-                self.MakeUndiscoverable()
+            if CBluetoothFuctions.CheckIfBluetooth():
+                CBluetoothFuctions.MakeUndiscoverable()
                 break
+
+            time.sleep(0.1)
+
+        subprocess.run(["sudo","shutdown"], check = True)
+
 
 
 if __name__ == '__main__':
     st = time.time()
 
-    #CInquiry.StartBluetoothService()
-    #CInquiry.UnblockWirelessConnections()
-    #CInquiry.EnableBluetoothService()
-    #CInquiry.StartBluetoothService()
-    #CInquiry.MakeDiscoverable()
-    #CInquiry.CheckIfBluetooth()
-    CInquiry().InitializeBluetoothConnection()
+    CBluetoothModules().InitializeBluetoothConnection()
 
     et = time.time()
 
