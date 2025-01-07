@@ -1,6 +1,6 @@
 import subprocess
 import time
-import general.py
+import MGeneral
 
 class CBluetoothFuctions(object):
 
