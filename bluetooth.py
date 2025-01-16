@@ -1,6 +1,6 @@
 import subprocess
 import time
-import general.py
+# import general.py
 
 class CBluetoothFuctions(object):
 
@@ -65,15 +65,19 @@ class CBluetoothFuctions(object):
             print(f"Fehler: {e}")
 
 class CBluetoothModules(object):
-    def InitializeBluetoothConnection():
-        if not CBluetoothFuctions.CheckIfBluetooth():
-            CBluetoothFuctions.UnblockWirelessConnections()
-            CBluetoothFuctions.MakeDiscoverable()
 
-        for i in 100:
+    def __init__(self):
+        pass
+    
+    def InitializeBluetoothConnection(self):
+        if not CBluetoothFuctions().CheckIfBluetooth():
+            CBluetoothFuctions().UnblockWirelessConnections()
+            CBluetoothFuctions().MakeDiscoverable()
+
+        for i in range(100):
         # weitere Abbruchbedingung hinzufügen wegen unendlicher Schleife
-            if CBluetoothFuctions.CheckIfBluetooth():
-                CBluetoothFuctions.MakeUndiscoverable()
+            if CBluetoothFuctions().CheckIfBluetooth():
+                CBluetoothFuctions().MakeUndiscoverable()
                 break
 
             time.sleep(0.1)
