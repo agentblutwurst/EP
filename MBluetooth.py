@@ -47,7 +47,14 @@ class CBluetoothFuctions(object):
 
     def UnblockWirelessConnections(self):
         try:
-            subprocess.run(["sudo","rfkill","unblock","all"])
+            subprocess.run(["sudo","rfkill","unblock","bluetooth"])
+
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler: {e}")
+
+    def BlockWirelessConnections(self):
+        try:
+            subprocess.run(["sudo","rfkill","block","bluetooth"])
 
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
@@ -64,23 +71,43 @@ class CBluetoothFuctions(object):
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-class CBluetoothModules(object):
+    def ForbidConnections(self):
+        try:
+            subprocess.run(["sudo","hciconfig","hci0","noscan"])
+
+        except subprocess.CalledProcessError as e:
+            print(f"Fehler: {e}")
+
+    def AllowConnections(self):
+        try:
+            subprocess.run([])
+
+class CBluetoothModule(object):
 
     def __init__(self):
-        pass
+        self.__ACheckIfBluetooth = CBluetoothFuctions().CheckIfBluetooth()
+        self.__AUnblockWirelessConnections = CBluetoothFuctions().UnblockWirelessConnections()
+        self.__AMakeDiscoverable = CBluetoothFuctions().MakeDiscoverable()
+        self.__AMakeUndiscoverable = CBluetoothFuctions().MakeUndiscoverable()
     
     def InitializeBluetoothConnection(self):
-        if not CBluetoothFuctions().CheckIfBluetooth():
-            CBluetoothFuctions().UnblockWirelessConnections()
-            CBluetoothFuctions().MakeDiscoverable()
+        while True:
+            if not self.__ACheckIfBluetooth:
+                self.__AUnblockWirelessConnections
+                self.__AMakeDiscoverable
 
-        for i in range(100):
-        # weitere Abbruchbedingung hinzufügen wegen unendlicher Schleife
-            if CBluetoothFuctions().CheckIfBluetooth():
-                CBluetoothFuctions().MakeUndiscoverable()
-                break
+            for i in range(1200):
+            # weitere Abbruchbedingung hinzufügen wegen unendlicher Schleife, CHECK
+                if self.__ACheckIfBluetooth:
+                    self.__AMakeUndiscoverable
 
-            time.sleep(0.1)
+                    break
+
+                time.sleep(0.1)
+            
+
+
+            break
 
         subprocess.run(["sudo","shutdown"], check = True)
 
@@ -89,7 +116,7 @@ class CBluetoothModules(object):
 if __name__ == '__main__':
     st = time.time()
 
-    CBluetoothModules().InitializeBluetoothConnection()
+    CBluetoothModule().InitializeBluetoothConnection()
 
     et = time.time()
 
