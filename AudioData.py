@@ -157,7 +157,7 @@ def AudioProgramm():
                     endtime = time.time()
                     oldTime = endtime - starttime
                     Time += oldTime
-                    print(Time/__Counter)
+                    # print(Time/__Counter)
 
 
                 else:
