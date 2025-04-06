@@ -117,7 +117,7 @@ def AudioProgramm():
     #opens the audio stream 
 
     __AudioStream = subprocess.Popen(
-    ['ffmpeg', '-f', 'pulse', '-i', 'alsa_output.platform-fef00700.hdmi.hdmi-stereo.monitor', '-f', 'wav', '-'],
+    ['ffmpeg', '-f', 'pulse', '-i', 'alsa_output.platform-fe00b840.mailbox.stereo-fallback.monitor', '-f', 'wav', '-'], # alsa_output.platform-fef00700.hdmi.hdmi-stereo.monitor
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE)
 

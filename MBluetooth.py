@@ -78,9 +78,9 @@ class CBluetoothFuctions(object):
         except subprocess.CalledProcessError as e:
             print(f"Fehler: {e}")
 
-    def AllowConnections(self):
-        try:
-            subprocess.run([])
+    # def AllowConnections(self):
+    #     try:
+    #         subprocess.run([])
 
 class CBluetoothModule(object):
 
