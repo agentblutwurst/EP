@@ -110,6 +110,7 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
 
 def AudioProgramm():
     from Bluetooth2 import BluetoothConnected , BluetoothProgramm
+    from LED import LEDLightenUp
     __SamplesPerBlock = 2048
     __BytePerSample = 4
     __SamplingrateInHertz = 48000
@@ -153,6 +154,8 @@ def AudioProgramm():
                         if __ShutdownCounter > 7000:
                             ShutdownRaspi()
                     
+                    subprocess.run(["sudo", "python3", "/home/EP/Documents/Projekt/LED.py"])
+                    # LEDLightenUp(__OutputList)
                     print(__OutputList)
                     endtime = time.time()
                     oldTime = endtime - starttime
