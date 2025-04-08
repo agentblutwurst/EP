@@ -1,6 +1,11 @@
 import time
+import json
+import sys
 import rpi_ws281x as ws
 
+
+# ListStr = sys.argv[1]
+# List = json.loads(ListStr)
 
 # LED configuration.
 LED_CHANNEL = 0
@@ -19,13 +24,13 @@ DOT_COLORS = [0x200000,     # green
             0x101010,     # white
             0x0]            # off
 
-FrequencyBand1 = [2, 3, 4, 1, 5, 8, 2, 10, 3, 7]
-FrequencyBand2 = [4, 1, 5, 8, 2, 10, 3, 7, 2, 3]
-FrequencyBand3 = [5, 8, 2, 10, 3, 7, 2, 3, 4, 1]
+#FrequencyBand1 = [2, 3, 4, 1, 5, 8, 2, 10, 3, 7]
+#FrequencyBand2 = [4, 1, 5, 8, 2, 10, 3, 7, 2, 3]
+#FrequencyBand3 = [5, 8, 2, 10, 3, 7, 2, 3, 4, 1]
 
-FrequencyBands = [FrequencyBand1,
-                FrequencyBand2,
-                FrequencyBand3]
+#FrequencyBands = [FrequencyBand1,
+#                FrequencyBand2,
+#                FrequencyBand3]
 
 # Initialisiere LED-Controller (Low-Level)
 LEDs = ws.new_ws2811_t()
@@ -52,14 +57,17 @@ ws.ws2811_t_dmanum_set(LEDs, LED_DMA_NUM)
 ws.ws2811_init(LEDs)
 
 
-def LEDLightenUp(AmplitudeList):
+# def LEDLightenUp(AmplitudeList): ///////
     # Animation
+def funk(List):
     try:
         # Iteriere durch alle Frequenzbänder
         for i in range(10):  # 10 Frequenzbänder
             # Berechne die Start- und Endposition für das Frequenzband im LED-Streifen
             StartLED = i * 10  # Beginn der Säule (jede Säule hat 10 LEDs)
-            EndLED = StartLED + AmplitudeList[i]  # Endposition der Säule (basierend auf dem Wert)
+            # print(i)
+            # print(List[i])
+            EndLED = StartLED + List[i]  # AmplitudeList ///////# Endposition der Säule (basierend auf dem Wert)
 
             # Setze LEDs für dieses Frequenzband (Säule)
             for j in range(10):  # Jede Säule hat 10 LEDs
@@ -80,3 +88,7 @@ def LEDLightenUp(AmplitudeList):
         ws.ws2811_fini(LEDs)
         ws.delete_ws2811_t(LEDs)
 
+if __name__ == "__main__":
+    ListStr = sys.argv[1]
+    List = json.loads(ListStr)
+    funk(List)

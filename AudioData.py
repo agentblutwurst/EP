@@ -2,6 +2,7 @@ import subprocess
 import struct
 import numpy as np
 import time
+import json
 
 def ShutdownRaspi():
     subprocess.run(["sudo","shutdown"], check = True)
@@ -56,7 +57,7 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
     
     #method code
     if np.all(__PositiveMagnitudeVector == 0):
-        return [0,0,0,0,0,0,0,0,0]
+        return [0,0,0,0,0,0,0,0,0,0]
     
     else:
         __FrequencyBands = [(1 , 31.25),            #Bass
@@ -68,7 +69,8 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
                             (1000 , 2000),          #Mitten
                             (2000 , 4000),          #Höhen
                             (4000 , 8000),          #Höhen
-                            (8000 , 24000)]         #Höhen
+                            (8000 , 23500),         #Höhen
+                            (23500, 24000)]         #Pseudo
         __FirstBandValue = 0
         __BandValue = 0
         __ListIndex = 0
@@ -85,32 +87,11 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
                 __FirstBandValue = __PositiveMagnitudeVector[__idx]
                 __BandValue = 0
                 __ListIndex += 1
-        #__OutputList = (__OutputList / np.max(__OutputList))*10
         __OutputList = [round(__wert) for __wert in __OutputList]
         return __OutputList
 
-
-            
-
-        #__BandValue = 0
-        #__OutputList = []
-        #for i, __Band in enumerate(__FrequencyBands):
-         #   for __idx in range(1, len(__PositiveFrequencyVector)):
-          #      if __Band[0] <= __PositiveFrequencyVector[__idx] <= __Band[1]:
-           #         __CurrentValue = __PositiveMagnitudeVector[__idx]
-            #        if __CurrentValue > __BandValue:
-             #           __BandValue = __CurrentValue
-            #__OutputList.append(__BandValue)
-            #__BandValue = 0
-        #OutputList = (OutputList / np.max(OutputList))*10
-        #__OutputList = [round(__wert) for __wert in __OutputList]
-        #return __OutputList
-    
-
-
 def AudioProgramm():
     from Bluetooth2 import BluetoothConnected , BluetoothProgramm
-    from LED import LEDLightenUp
     __SamplesPerBlock = 2048
     __BytePerSample = 4
     __SamplingrateInHertz = 48000
@@ -118,7 +99,7 @@ def AudioProgramm():
     #opens the audio stream 
 
     __AudioStream = subprocess.Popen(
-    ['ffmpeg', '-f', 'pulse', '-i', 'alsa_output.platform-fe00b840.mailbox.stereo-fallback.monitor', '-f', 'wav', '-'], # alsa_output.platform-fef00700.hdmi.hdmi-stereo.monitor
+    ['ffmpeg', '-f', 'pulse', '-i', 'alsa_output.platform-fef00700.hdmi.hdmi-stereo.monitor', '-f', 'wav', '-'], # alsa_output.platform-fe00b840.mailbox.stereo-fallback.monitor
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE)
 
@@ -147,14 +128,15 @@ def AudioProgramm():
                     __OutputList = _Visualizer(
                                 _PositiveFrequenciesAfterFFT(__SamplesPerBlock , __SamplingrateInHertz),
                                 _FrequencyMagnitudeVectorForPositiveFrequencies(__SignalBlock , __SamplesPerBlock))
-                    if __OutputList != [0,0,0,0,0,0,0,0,0]:
+                    if __OutputList != [0,0,0,0,0,0,0,0,0,0]:
                         __ShutdownCounter = 0
                     else:
                         __ShutdownCounter += 1
                         if __ShutdownCounter > 7000:
                             ShutdownRaspi()
                     
-                    subprocess.run(["sudo", "python3", "/home/EP/Documents/Projekt/LED.py"])
+                    __OutputListStr = json.dumps(__OutputList)
+                    subprocess.run(["sudo", "python3", "/home/EP/Documents/Projekt/LED.py", __OutputListStr])
                     # LEDLightenUp(__OutputList)
                     print(__OutputList)
                     endtime = time.time()
