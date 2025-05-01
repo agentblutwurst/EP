@@ -60,35 +60,41 @@ ws.ws2811_init(LEDs)
 # def LEDLightenUp(AmplitudeList): ///////
     # Animation
 def funk(List):
+    # Iteriere durch alle Frequenzbänder
+    for i in range(10):  # 10 Frequenzbänder
+        # Berechne die Start- und Endposition für das Frequenzband im LED-Streifen
+        StartLED = i * 10  # Beginn der Säule (jede Säule hat 10 LEDs)
+        # print(i)
+        # print(List[i])
+        EndLED = StartLED + List[i]  # AmplitudeList ///////# Endposition der Säule (basierend auf dem Wert)
+
+        # Setze LEDs für dieses Frequenzband (Säule)
+        for j in range(10):  # Jede Säule hat 10 LEDs
+            LEDIndex = StartLED + j  # Berechne den LED-Index im Gesamtstreifen
+            if LEDIndex < EndLED:  # LEDs bis zum Wert des Frequenzbandes leuchten lassen
+                ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[0])
+            else:
+                ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[4])  # Restliche LEDs ausschalten
+
+        # Rendere die neuen Werte auf die LEDs
+        ws.ws2811_render(LEDs)
+
+        # Zeitintervall von 42,6 ms
+        # time.sleep(1)
+        # time.sleep(0.0426)
+    
+        
+
+if __name__ == "__main__":
     try:
-        # Iteriere durch alle Frequenzbänder
-        for i in range(10):  # 10 Frequenzbänder
-            # Berechne die Start- und Endposition für das Frequenzband im LED-Streifen
-            StartLED = i * 10  # Beginn der Säule (jede Säule hat 10 LEDs)
-            # print(i)
-            # print(List[i])
-            EndLED = StartLED + List[i]  # AmplitudeList ///////# Endposition der Säule (basierend auf dem Wert)
-
-            # Setze LEDs für dieses Frequenzband (Säule)
-            for j in range(10):  # Jede Säule hat 10 LEDs
-                LEDIndex = StartLED + j  # Berechne den LED-Index im Gesamtstreifen
-                if LEDIndex < EndLED:  # LEDs bis zum Wert des Frequenzbandes leuchten lassen
-                    ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[0])
-                else:
-                    ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[4])  # Restliche LEDs ausschalten
-
-            # Rendere die neuen Werte auf die LEDs
-            ws.ws2811_render(LEDs)
-
-            # Zeitintervall von 42,6 ms
-            # time.sleep(1)
-            # time.sleep(0.0426)
+        for Line in sys.stdin:
+            if not Line.strip():
+                continue
+            List = json.loads(Line)
+            funk(List)
+    except KeyboardInterrupt:
+        pass
     finally:
         # Aufräumen bei Programmende
         ws.ws2811_fini(LEDs)
         ws.delete_ws2811_t(LEDs)
-
-if __name__ == "__main__":
-    ListStr = sys.argv[1]
-    List = json.loads(ListStr)
-    funk(List)

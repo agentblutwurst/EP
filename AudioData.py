@@ -4,58 +4,43 @@ import numpy as np
 import time
 import json
 
-def ShutdownRaspi():
-    subprocess.run(["sudo","shutdown"], check = True)
-
-def _AudioDataConditioning(AudioData):     #32bit audi0 codec 
-    #private variables
+def _AudioDataConditioning(AudioData):     #32bit audio daten roh 
     __AudioData = AudioData
 
-    #method code
-    __SignalBlock = struct.unpack('<' + 'i' * (len(__AudioData) // 4), __AudioData)
-    __SignalBlock = np.array(__SignalBlock, dtype=np.float32)
+    __SignalBlock = struct.unpack('<' + 'i' * (len(__AudioData) // 4), __AudioData) #wandelt daten in 32 bit float audio daten
+    __SignalBlock = np.array(__SignalBlock, dtype=np.float32)                       #macht numpy array daraus
     __MaxAmplitude = np.max(np.abs(__SignalBlock))
-    #empty signalblock
+
     if __MaxAmplitude == 0:
         return __SignalBlock
-    #full signalblock
     else:
-        __SignalBlock = (__SignalBlock / __MaxAmplitude)*22
+        __SignalBlock = (__SignalBlock / __MaxAmplitude)*10                         #werte zwischen -10 und 10
         return __SignalBlock
-
 
 
 def _FrequencyMagnitudeVectorForPositiveFrequencies(Signal , NumberOfSamples):
-    #private variables
-    __Signal = Signal
+    __Window = np.hamming(2048)
+    __WindowedSignal = Signal * __Window
     __NumberOfSamples = NumberOfSamples
     
-    #method code
-    __AllFrequencyMagnitudes = np.fft.fft(__Signal) / __NumberOfSamples
+    __AllFrequencyMagnitudes = np.fft.fft(__WindowedSignal) / (__NumberOfSamples/4)
     __FrequencyMagnitudesForPositiveFrequencies = __AllFrequencyMagnitudes[:__NumberOfSamples//2]
     return np.abs(__FrequencyMagnitudesForPositiveFrequencies)
 
 
-
 def _PositiveFrequenciesAfterFFT(NumberOfSamples , Samplingrate):
-    #private variables
     __NumberOfSamples = NumberOfSamples 
     __Samplingrate = Samplingrate
 
-    #method code
     __AllFrequencies = np.fft.fftfreq(__NumberOfSamples , 1/__Samplingrate)
     __PositiveFrequencieVector = __AllFrequencies[:__NumberOfSamples//2]
     return __PositiveFrequencieVector
 
 
-
 def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
-    #private variables
     __PositiveFrequencyVector = PositiveFrequencyVector
     __PositiveMagnitudeVector = PositiveMagnitudeVector
     
-    
-    #method code
     if np.all(__PositiveMagnitudeVector == 0):
         return [0,0,0,0,0,0,0,0,0,0]
     
@@ -76,9 +61,9 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
         __ListIndex = 0
         __OutputList = []
         for __idx in range (1, len(__PositiveFrequencyVector)):
-            if __PositiveFrequencyVector[__idx] <= __FrequencyBands[__ListIndex][1]:
-                __CurrentValue = __PositiveMagnitudeVector[__idx]
-                if __CurrentValue > __BandValue:
+            if __PositiveFrequencyVector[__idx] <= __FrequencyBands[__ListIndex][1]:        #höchste magnitude aus jeweilligem 
+                __CurrentValue = __PositiveMagnitudeVector[__idx]                           #frequenzband wird der Ausgabeliste
+                if __CurrentValue > __BandValue:                                            #zugeordnet und zwischen 0 und 10 konditioniert
                     __BandValue = __CurrentValue
             else:
                 if __BandValue <= __FirstBandValue:
@@ -88,25 +73,29 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
                 __BandValue = 0
                 __ListIndex += 1
         __OutputList = [round(__wert) for __wert in __OutputList]
+        __OutputList = [min(x, 10) for x in __OutputList]
         return __OutputList
 
 def AudioProgramm():
-    from Bluetooth2 import BluetoothConnected , BluetoothProgramm
+    from Bluetooth2 import BluetoothConnected , BluetoothProgramm , ShutdownRaspi
     __SamplesPerBlock = 2048
     __BytePerSample = 4
     __SamplingrateInHertz = 48000
-
-    #opens the audio stream 
-
+ 
+    #Öffnen des Audiostreams
     __AudioStream = subprocess.Popen(
     ['ffmpeg', '-f', 'pulse', '-i', 'alsa_output.platform-fef00700.hdmi.hdmi-stereo.monitor', '-f', 'wav', '-'], # alsa_output.platform-fe00b840.mailbox.stereo-fallback.monitor
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE)
+    stdout=subprocess.PIPE)
 
-    #processes the audio stream
+    #Öffnen der Pipe zum LED Programm
+    __LEDPipe = subprocess.Popen(["sudo", "python", "/home/EP/Documents/Projekt/LED.py"],
+    stdin=subprocess.PIPE,
+    text=True)
+
     __Counter = 0
-    __ShutdownCounter = 0
-    Time = 0
+    __Time = 0
+    __Duration = 1 * 60         # !!!! muss noch auf 15 min gesetzt werden (min * sekunden)
+    __StartTimer = time.time()
     while True:
         starttime = time.time()
         if BluetoothConnected() == False:
@@ -116,39 +105,33 @@ def AudioProgramm():
             BluetoothProgramm()
         
         else:
-            #reads 2048 Samples from the audio stream (4 Bytes = 32 Bit is one Sample)
-            __AudioData = __AudioStream.stdout.read(__BytePerSample * __SamplesPerBlock)
+            __AudioData = __AudioStream.stdout.read(__BytePerSample * __SamplesPerBlock)    #Liest 2048 Samples vom Audiostream (4 Bytes = 32 Bit ist ein Sample)
 
-            #first block has irellevant information
-            if __Counter >= 1:
+            if __Counter >= 1:      #Erster Block hat irrelevante Information
                 
-                #actual programm
                 if __AudioData:
                     __SignalBlock = _AudioDataConditioning(__AudioData)
                     __OutputList = _Visualizer(
                                 _PositiveFrequenciesAfterFFT(__SamplesPerBlock , __SamplingrateInHertz),
                                 _FrequencyMagnitudeVectorForPositiveFrequencies(__SignalBlock , __SamplesPerBlock))
+                    
                     if __OutputList != [0,0,0,0,0,0,0,0,0,0]:
-                        __ShutdownCounter = 0
+                        __StartTimer = time.time()
                     else:
-                        __ShutdownCounter += 1
-                        if __ShutdownCounter > 7000:
+                        if (time.time() - __StartTimer) > __Duration:                       #wenn 15 min lang keine Audio abgespielt wird, fährt das System herunter
+                            __AudioStream.terminate()
+                            __AudioStream.wait()
                             ShutdownRaspi()
+                            break
                     
                     __OutputListStr = json.dumps(__OutputList)
-                    subprocess.run(["sudo", "python3", "/home/EP/Documents/Projekt/LED.py", __OutputListStr])
+                    __LEDPipe.stdin.write(__OutputListStr + "\n")
+                    __LEDPipe.stdin.flush()
                     # LEDLightenUp(__OutputList)
                     print(__OutputList)
                     endtime = time.time()
                     oldTime = endtime - starttime
-                    Time += oldTime
-                    # print(Time/__Counter)
-
-
-                else:
-                    print("keine Audio Daten")
-
-                #__Counter -= 1
+                    __Time += oldTime
+                    print(__Time/__Counter)
 
             __Counter += 1
-            #print(__Counter)
