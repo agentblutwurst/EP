@@ -84,7 +84,7 @@ try:
             raise RuntimeError('ws2811_render failed with code {0} ({1})'.format(resp, message))
 
         # Delay for a small period of time.
-        time.sleep(0.25)
+        time.sleep(0.4)
 
         # Increase offset to animate colors moving.  Will eventually overflow, which
         # is fine.

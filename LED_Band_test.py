@@ -19,7 +19,7 @@ DOT_COLORS = [0x200000,     # green
             0x101010,     # white
             0x0]            # off
 
-FrequencyBand1 = [2, 3, 4, 1, 5, 8, 2, 10, 3, 7]
+FrequencyBand1 = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
 FrequencyBand2 = [4, 1, 5, 8, 2, 10, 3, 7, 2, 3]
 FrequencyBand3 = [5, 8, 2, 10, 3, 7, 2, 3, 4, 1]
 
@@ -58,7 +58,7 @@ def LEDLightenUp(AmplitudeList):
     try:
         # Iteriere durch alle Frequenzbänder
         while True:
-            for h in range(len(AmplitudeList)):
+            for h in range(1):
                 for i in range(10):  # 10 Frequenzbänder
                     # Berechne die Start- und Endposition für das Frequenzband im LED-Streifen
                     StartLED = i * 10  # Beginn der Säule (jede Säule hat 10 LEDs)
