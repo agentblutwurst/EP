@@ -18,11 +18,17 @@ LED_INVERT = 0              # Set to 1 to invert the LED signal, good if using N
 #                             transistor as a 3.3V->5V level converter.  Keep at 0
 #                             for a normal/non-inverted signal.
 
-DOT_COLORS = [0x200000,     # green
-            0x002000,     # red
-            0x000020,     # blue
-            0x101010,     # white
-            0x0]            # off
+DOT_COLORS = [0x002000,     # red
+              0x102000,     # orange
+              0x202000,     # yellow
+              0x200c00,     # green with a lil bit of yellow
+              0x200000,     # green
+              0x200008,     # light green
+              0x180020,     # cyan
+              0x000020,     # blue
+              0x00101c,     # violet
+              0x002014,     # pink
+              0x0]            # off
 
 #FrequencyBand1 = [2, 3, 4, 1, 5, 8, 2, 10, 3, 7]
 #FrequencyBand2 = [4, 1, 5, 8, 2, 10, 3, 7, 2, 3]
@@ -72,9 +78,9 @@ def funk(List):
         for j in range(10):  # Jede Säule hat 10 LEDs
             LEDIndex = StartLED + j  # Berechne den LED-Index im Gesamtstreifen
             if LEDIndex < EndLED:  # LEDs bis zum Wert des Frequenzbandes leuchten lassen
-                ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[0])
+                ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[i])
             else:
-                ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[4])  # Restliche LEDs ausschalten
+                ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[10])  # Restliche LEDs ausschalten
 
         # Rendere die neuen Werte auf die LEDs
         ws.ws2811_render(LEDs)

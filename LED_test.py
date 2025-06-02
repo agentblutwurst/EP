@@ -25,14 +25,17 @@ LED_INVERT = 0              # Set to 1 to invert the LED signal, good if using N
 # Define colors which will be used by the example.  Each color is an unsigned
 # 32-bit value where the lower 24 bits define the red, green, blue data (each
 # being 8 bits long).
-DOT_COLORS = [0x200000,   # red
-              0x201000,   # orange
-              0x202000,   # yellow
-              0x002000,   # green
-              0x002020,   # lightblue
-              0x000020,   # blue
-              0x100010,   # purple
-              0x200010]  # pink
+
+DOT_COLORS = [0x002000,     # red
+              0x102000,     # orange
+              0x202000,     # yellow
+              0x200c00,     # green with a lil bit of yellow
+              0x200000,     # green
+              0x200008,     # light green
+              0x180020,     # cyan
+              0x000020,     # blue
+              0x00101c,     # violet
+              0x002014]     # pink
 
 
 # Create a ws2811_t structure from the LED configuration.
