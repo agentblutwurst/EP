@@ -1,0 +1,3 @@
+[properties]
+sizeof_long_double = 8
+longdouble_format = 'IEEE_DOUBLE_LE'
