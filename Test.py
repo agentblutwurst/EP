@@ -1,16 +1,18 @@
 import RPi.GPIO as GPIO
 import time
 
+MOSFET_GATE_PIN = 17  # z. B. GPIO17 (Pin 11)
+
 GPIO.setmode(GPIO.BCM)
+GPIO.setup(MOSFET_GATE_PIN, GPIO.OUT)
 
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+for x in range(5):
+    # Einschalten (MOSFET leitend → Ventil an)
+    GPIO.output(MOSFET_GATE_PIN, GPIO.HIGH)
+    time.sleep(0.5)
 
-def KnoppGedrueckt(PinNummer):    
-    Zustand = GPIO.input(PinNummer) == GPIO.LOW
-    return Zustand
+    # Ausschalten
+    GPIO.output(MOSFET_GATE_PIN, GPIO.LOW)
+    time.sleep(1)
 
-while True:
-    print(KnoppGedrueckt(17))
-    print(KnoppGedrueckt(22))
-    time.sleep(0.25)
+GPIO.cleanup()

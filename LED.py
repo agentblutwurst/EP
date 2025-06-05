@@ -69,13 +69,13 @@ def funk(List):
     # Iteriere durch alle Frequenzbänder
     for i in range(10):  # 10 Frequenzbänder
         # Berechne die Start- und Endposition für das Frequenzband im LED-Streifen
-        StartLED = i * 10  # Beginn der Säule (jede Säule hat 10 LEDs)
+        StartLED = i * 8  # Beginn der Säule (jede Säule hat 8 LEDs)
         # print(i)
         # print(List[i])
         EndLED = StartLED + List[i]  # AmplitudeList ///////# Endposition der Säule (basierend auf dem Wert)
 
         # Setze LEDs für dieses Frequenzband (Säule)
-        for j in range(10):  # Jede Säule hat 10 LEDs
+        for j in range(8):  # Jede Säule hat 8 LEDs
             LEDIndex = StartLED + j  # Berechne den LED-Index im Gesamtstreifen
             if LEDIndex < EndLED:  # LEDs bis zum Wert des Frequenzbandes leuchten lassen
                 ws.ws2811_led_set(channel, LEDIndex, DOT_COLORS[i])

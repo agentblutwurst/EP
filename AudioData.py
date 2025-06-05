@@ -14,7 +14,7 @@ def _AudioDataConditioning(AudioData):     #32bit audio daten roh
     if __MaxAmplitude == 0:
         return __SignalBlock
     else:
-        __SignalBlock = (__SignalBlock / __MaxAmplitude)*10                         #werte zwischen -10 und 10
+        __SignalBlock = (__SignalBlock / __MaxAmplitude)*8                         #werte zwischen -10 und 10
         return __SignalBlock
 
 
@@ -73,7 +73,7 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
                 __BandValue = 0
                 __ListIndex += 1
         __OutputList = [round(__wert) for __wert in __OutputList]
-        __OutputList = [min(x, 10) for x in __OutputList]
+        __OutputList = [min(x, 8) for x in __OutputList]
         return __OutputList
 
 def AudioProgramm():
@@ -88,13 +88,13 @@ def AudioProgramm():
     stdout=subprocess.PIPE)
 
     #Öffnen der Pipe zum LED Programm
-    __LEDPipe = subprocess.Popen(["sudo", "python", "/home/EP/Documents/Projekt/LED.py"],
+    __LEDPipe = subprocess.Popen(["sudo", "/home/EP/Documents/EP/EP/.venv/bin/python", "/home/EP/Documents/EP/EP/LED.py"],
     stdin=subprocess.PIPE,
     text=True)
 
     __Counter = 0
     __Time = 0
-    __Duration = 1 * 60         # !!!! muss noch auf 15 min gesetzt werden (min * sekunden)
+    __Duration = 15 * 60         # !!!! muss noch auf 15 min gesetzt werden (min * sekunden)
     __StartTimer = time.time()
     while True:
         starttime = time.time()
