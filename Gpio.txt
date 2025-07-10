@@ -1,0 +1,19 @@
+LED:
+GPIO 12
+GND
+
+Ventile:
+5
+6
+
+Taster:
+17 Bluetooth (blau, links)
+27 leiser (weiß, mitte)
+22 lauter (weiß, rechts)
+GND (zsm. mit Leuchten)
+
+Leuchten:
+23 Bluetooth (blau)
+24 leiser (weiß)
+25 lauter (weiß, rechts)
+GND (zsm. mit Taster)

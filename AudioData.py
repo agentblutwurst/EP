@@ -3,6 +3,10 @@ import struct
 import numpy as np
 import time
 import json
+import RPi.GPIO as GPIO
+
+MOSFET_GATE_PIN0 = 5
+MOSFET_GATE_PIN1 = 6
 
 def _AudioDataConditioning(AudioData):     #32bit audio daten roh 
     __AudioData = AudioData
@@ -14,7 +18,7 @@ def _AudioDataConditioning(AudioData):     #32bit audio daten roh
     if __MaxAmplitude == 0:
         return __SignalBlock
     else:
-        __SignalBlock = (__SignalBlock / __MaxAmplitude)*8                         #werte zwischen -10 und 10
+        __SignalBlock = (__SignalBlock / __MaxAmplitude)*8                         #werte zwischen -8 und 8
         return __SignalBlock
 
 
@@ -76,15 +80,43 @@ def _Visualizer(PositiveFrequencyVector , PositiveMagnitudeVector):
         __OutputList = [min(x, 8) for x in __OutputList]
         return __OutputList
 
+
+def _ValveCTL(BassValueList):
+    if ((BassValueList[0] > 6) or (BassValueList[1] > 6) or (BassValueList[0] + BassValueList[1] > 7)):
+        GPIO.output(MOSFET_GATE_PIN0, GPIO.HIGH)
+        GPIO.output(MOSFET_GATE_PIN1, GPIO.HIGH)
+    else:
+        GPIO.output(MOSFET_GATE_PIN0, GPIO.LOW)
+        GPIO.output(MOSFET_GATE_PIN1, GPIO.LOW)
+
+    
+def BluetoothButton():
+    if GPIO.input(17) == GPIO.LOW:
+        return True
+
+def IncreaseButton():
+    if GPIO.input(22) == GPIO.LOW:
+        return True  
+    
+def DecreaseButton():
+    if GPIO.input(27) == GPIO.LOW:
+        return True
+
+def IncreaseVolume():
+    subprocess.run(["amixer", "sset", "Master", "5%+"])
+
+def DecreaseVolume():
+    subprocess.run(["amixer", "sset", "Master", "5%-"])
+
 def AudioProgramm():
-    from Bluetooth2 import BluetoothConnected , BluetoothProgramm , ShutdownRaspi
+    from Bluetooth import BluetoothConnected , BluetoothProgramm , ShutdownRaspi
     __SamplesPerBlock = 2048
     __BytePerSample = 4
     __SamplingrateInHertz = 48000
  
     #Öffnen des Audiostreams
     __AudioStream = subprocess.Popen(
-    ['ffmpeg', '-f', 'pulse', '-i', 'alsa_output.platform-fef00700.hdmi.hdmi-stereo.monitor', '-f', 'wav', '-'], # alsa_output.platform-fe00b840.mailbox.stereo-fallback.monitor
+    ['ffmpeg', '-f', 'pulse', '-i', 'alsa_output.usb-C-Media_Electronics_Inc._USB_Audio_Device-00.analog-stereo.monitor', '-f', 'wav', '-'], # alsa_output.platform-fef00700.hdmi.hdmi-stereo.monitor
     stdout=subprocess.PIPE)
 
     #Öffnen der Pipe zum LED Programm
@@ -94,12 +126,31 @@ def AudioProgramm():
 
     __Counter = 0
     __Time = 0
-    __Duration = 15 * 60         # !!!! muss noch auf 15 min gesetzt werden (min * sekunden)
-    __StartTimer = time.time()
+    __ShutdownDuration = 15 * 60         # !!!! muss noch auf 15 min gesetzt werden (min * sekunden)
+    __StartTimerShutdown = time.time()
+    __StarttimeVolume = time.time()
+    __Volumetime = 0.3 * 1
+
     while True:
         starttime = time.time()
-        if BluetoothConnected() == False:
+
+        if (time.time() - __StarttimeVolume) > __Volumetime:
+            if IncreaseButton():
+                IncreaseVolume()
+                __StarttimeVolume = time.time()
+            
+            elif DecreaseButton():
+                DecreaseVolume()
+                __StarttimeVolume = time.time()
+
+        if ((BluetoothConnected() == False) or (BluetoothButton() == True)):
             print("die Verbindung wurde unterbrochen")
+            __LastOutputList = [0,0,0,0,0,0,0,0,0,0]
+            __OutputListStr = json.dumps(__LastOutputList)
+            __LEDPipe.stdin.write(__OutputListStr + "\n")
+            __LEDPipe.stdin.flush()
+
+            _ValveCTL(__LastOutputList[1:3])
             __AudioStream.terminate()
             __AudioStream.wait()
             BluetoothProgramm()
@@ -116,13 +167,16 @@ def AudioProgramm():
                                 _FrequencyMagnitudeVectorForPositiveFrequencies(__SignalBlock , __SamplesPerBlock))
                     
                     if __OutputList != [0,0,0,0,0,0,0,0,0,0]:
-                        __StartTimer = time.time()
+                        __StartTimerShutdown = time.time()
                     else:
-                        if (time.time() - __StartTimer) > __Duration:                       #wenn 15 min lang keine Audio abgespielt wird, fährt das System herunter
+                        if (time.time() - __StartTimerShutdown) > __ShutdownDuration:                       #wenn 15 min lang keine Audio abgespielt wird, fährt das System herunter
                             __AudioStream.terminate()
                             __AudioStream.wait()
+                            GPIO.cleanup()
                             ShutdownRaspi()
                             break
+                        
+                    _ValveCTL(__OutputList[1:3])
                     
                     __OutputListStr = json.dumps(__OutputList)
                     __LEDPipe.stdin.write(__OutputListStr + "\n")
